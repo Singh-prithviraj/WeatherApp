@@ -1,0 +1,317 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather App</title>
+
+  <!-- Google Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+
+  <style>
+    :root {
+      --white: #ffffff;
+      --black: #0d0d0d;
+      --blue-1: #62b8f5;
+      --blue-2: #4475ef;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    /* Full-screen background container */
+    .bg-container {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background-image: linear-gradient(135deg, rgba(201, 234, 255, 0.8), rgba(227, 242, 253, 0.8)), 
+                        url('{% if exception_occurred %}https://images.pexels.com/photos/3008509/pexels-photo-3008509.jpeg?auto=compress&cs=tinysrgb&w=1600{% else %}{{ image_url }}{% endif %}');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      padding: 3rem 1rem 2rem;
+      transition: background-image 0.8s ease-in-out;
+    }
+
+    .container {
+      width: 50%;
+      max-width: 600px;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(12px);
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 2rem;
+      text-align: center;
+      color: var(--black);
+      box-shadow: 0 4px 25px rgba(0,0,0,0.25);
+      animation: floatUp 1s ease-in-out, fadeIn 0.8s ease-in-out;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--blue-2);
+      margin-bottom: 1.5rem;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+      background: rgba(255,255,255,0.8);
+      color: var(--black);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]::placeholder {
+      color: #666;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--blue-1);
+      box-shadow: 0 0 8px rgba(98,184,245,0.5);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: 2px solid var(--blue-2);
+      border-radius: 8px;
+      color: #fff;
+      background: var(--blue-2);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: var(--blue-1);
+      color: var(--black);
+      transform: translateY(-3px);
+      box-shadow: 0 0 15px rgba(68,117,239,0.6);
+    }
+
+    /* Weather Section */
+    .weather {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .left, .right {
+      flex: 1;
+      min-width: 200px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 10px;
+      padding: 1rem;
+      color: var(--black);
+      backdrop-filter: blur(8px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .left:hover, .right:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(68,117,239,0.3);
+    }
+
+    .temp {
+      font-size: 2.5rem;
+      color: var(--blue-2);
+      text-align: center;
+    }
+
+    .city {
+      font-size: 1.4rem;
+      text-align: center;
+      color: var(--black);
+    }
+
+    .icon img {
+      height: 85px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .condition {
+      font-size: 1.2rem;
+      color: var(--black);
+    }
+
+    /* Error Box */
+    .error-box {
+      background: rgba(255,50,50,0.15);
+      border: 1px solid rgba(255,100,100,0.4);
+      color: #ff6b6b;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-weight: 500;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 15px rgba(255,80,80,0.2);
+      animation: slideDown 0.5s ease-in-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes floatUp {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Footer */
+    .footer {
+      width: 100%;
+      text-align: center;
+      padding: 1.2rem 0;
+      background: transparent;
+      border-top: none;
+      color: #f1f1f1;
+      font-size: 0.95rem;
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
+      margin-top: auto; /* pushes footer to bottom */
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-content p {
+      margin: 0;
+      font-weight: 500;
+      color: #f1f1f1;
+    }
+
+    .footer-content strong {
+      color: #00bfff;
+      text-shadow: 0 0 10px rgba(0,191,255,0.7);
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 0.3rem;
+    }
+
+    .social-links a {
+      color: #fff;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 6px rgba(0,0,0,0.5);
+    }
+
+    .social-links a:hover {
+      color: #00bfff;
+      transform: translateY(-3px);
+      text-shadow: 0 0 12px rgba(0,191,255,0.9);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) { .container { width: 80%; } }
+    @media (max-width: 600px) {
+      .container { width: 90%; padding: 1.5rem; }
+      form { flex-direction: column; gap: 12px; }
+      input[type="text"], .btn { width: 100%; }
+      .weather { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-container">
+    <div class="container">
+      <h1 class="heading">Weather App</h1>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="city" placeholder="Enter City" />
+        <button type="submit" class="btn">Search</button>
+      </form>
+
+      {% if exception_occurred %}
+      <div class="error-box">
+        <p>⚠️ Oops! The city you entered could not be found. Please try again.</p>
+      </div>
+      {% endif %}
+
+      <div class="weather">
+        <div class="left">
+          <h2 class="temp">{{ temp }}&#176;</h2>
+          <h2 class="city">{{ city }}</h2>
+        </div>
+        <div class="right">
+          <div class="icon">
+            <img src="http://openweathermap.org/img/w/{{ icon }}.png" width="120px" />
+          </div>
+          <div class="condition">
+            <p>{{ description }}</p>
+            <p>{{ day }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <footer class="footer">
+      <div class="footer-content">
+        <p>🌦️ Weather App &copy; 2025 | Designed with 💙 by <strong>Prithviraj Singh</strong></p>
+        <div class="social-links">
+          <a href="https://github.com/" target="_blank"><i class="fab fa-github"></i></a>
+          <a href="https://linkedin.com/" target="_blank"><i class="fab fa-linkedin"></i></a>
+          <a href="mailto:example@email.com"><i class="fas fa-envelope"></i></a>
+        </div>
+      </div>
+    </footer>
+  </div> <!-- end of bg-container -->
+</body>
+</html>
+
