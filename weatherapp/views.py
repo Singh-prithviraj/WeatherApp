@@ -45,3 +45,28 @@ def home(request):
         day=datetime.date.today()
 
         return render(request, 'weatherapp/index.html',{'description':'clear sky','icon':'01d','temp':25,'day':day,'city':'indore','exception_occurred': True})
+
+
+from django.core.mail import send_mail, BadHeaderError
+from django.shortcuts import render
+from django.conf import settings
+
+def contact_view(request):
+    context = {}
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+
+        subject = f"New message from {name}"
+        full_message = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+
+        try:
+            send_mail(subject, full_message, settings.EMAIL_HOST_USER, [settings.EMAIL_HOST_USER])
+            context['success'] = "✅ Thank you! Your message has been sent successfully."
+        except BadHeaderError:
+            context['error'] = "❌ Invalid header found."
+        except Exception as e:
+            context['error'] = f"❌ Oops! Something went wrong: {e}"
+
+    return render(request, 'weatherapp/contact.html', context)
