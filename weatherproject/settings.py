@@ -138,13 +138,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default=None)
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default=None)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'webmaster@localhost'
 
-
-# Fallback for local development
+# Raise error in production if email is not configured
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    print("⚠️ EMAIL_HOST_USER or EMAIL_HOST_PASSWORD not set. Emails will print to console.")
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER if EMAIL_HOST_USER else 'webmaster@localhost'
+    import sys
+    print("❌ ERROR: EMAIL_HOST_USER or EMAIL_HOST_PASSWORD not set", file=sys.stderr)
